@@ -12,5 +12,21 @@
     "build": "webpack --config webpack.config.js",
     "dev": "webpack serve",
     "deploy": "git subtree push --prefix dist origin gh-pages"
-  }
+  },
+  "name": "odin-todo-list",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/levoweal/odin-todo-list.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/levoweal/odin-todo-list/issues"
+  },
+  "homepage": "https://github.com/levoweal/odin-todo-list#readme"
 }
