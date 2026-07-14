@@ -13,10 +13,15 @@ class Task {
     constructor(name, desc, due, prio) {
         this.name = name;
         this.desc = desc;
-        this.date = new Date();
+        this.date = new Date().toISOString().split('T')[0];
         this.due = due;
         this.prio = prio;
         this.isActive = true;
+        this.edit = {
+            desc: false,
+            due: false,
+            prio: false
+        };
     }
 }
 
@@ -61,6 +66,65 @@ function optionFactory(value) {
     option.value = value;
     option.textContent = value;
     return option;
+}
+
+function elementFactory(type, text, className = '') {
+    const element = document.createElement(type);
+    element.textContent = text;
+    element.className = className;
+    return element;
+}
+
+function smartEdit(task, target, titleSpan, className) {
+    let div;
+    let title;
+    let content;
+
+    if (!task.edit[target]) {
+        div = elementFactory('div', '', className);
+        title = elementFactory('span', titleSpan);
+        content = elementFactory('span', task[target]);
+        div.appendChild(title);
+        div.appendChild(content);
+    } else {
+        let type;
+        let tag;
+        if (target === 'desc') {
+            type = '';
+            tag = 'textarea';
+        }
+        div = labelFactory(className, type, titleSpan, tag);
+        div.el.value = task[target];
+        div.el.addEventListener('blur', () => {
+            task[target] = div.el.value;
+            task.edit[target] = !task.edit[target];
+            refresh();
+        });
+        /*title = document.createElement('label');
+        title.htmlFor = `${className}-input`;
+        title.textContent = titleSpan;
+
+        content = document.createElement('input');
+        content.id = `${className}-input`;
+        content.value = task[target];
+
+        content.addEventListener('blur', () => {
+            task[target] = content.value;
+            task.edit[target] = !task.edit[target];
+            refresh();
+        })*/
+    }
+
+    div.addEventListener('dblclick', () => {
+        task.edit[target] = !task.edit[target];
+        refresh();
+        if(div.el) div.el.focus(); //doesn't work...
+    })
+
+    //div.appendChild(title);
+    //div.appendChild(content);
+
+    return div;
 }
 
 //project form callback
@@ -182,7 +246,7 @@ function refresh() {
         //project expand
         projectHead.addEventListener('click', (e) => {
             if (e.target === editBtn) return;
-            project.isActive = (!project.isActive) ? true : false;
+            project.isActive = !project.isActive;
             refresh();
         })
 
@@ -228,49 +292,52 @@ function refresh() {
 }
 
 //tasks titles draw
-function taskFill(project, divTarget) {
+function taskFill(project, dad) {
     project.tasks.forEach(task => {
-        function elementConstructor(type, src, dad, className = '') {
-            const element = document.createElement(type);
-            element.textContent = src;
-            element.className = className;
-            dad.appendChild(element);
-            return element;
-        }
+        const taskHead = elementFactory('div', '', 'task-head');
+        const title = elementFactory('h4', task.name, 'task-name');
 
-        const taskHead = elementConstructor('div', '', divTarget, 'task-name');
-        elementConstructor('h4', task.name, taskHead);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.className = 'remove-task-button';
+        const removeBtn = elementFactory('button', 'Remove', 'task-remove-button');
         removeBtn.addEventListener('click', () => {
             project.tasks.splice(project.tasks.indexOf(task), 1);
             refresh();
         })
 
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Edit';
-        editBtn.className = 'edit-task-button';
+        const editBtn = elementFactory('button', 'Edit', 'task-edit-button');
         editBtn.addEventListener('click', () => {taskForm(project, task)});
 
+        taskHead.appendChild(title)
         taskHead.appendChild(editBtn);
         taskHead.appendChild(removeBtn);
+
+        dad.appendChild(taskHead);
 
         //task expand
         taskHead.addEventListener('click', (e) => {
             if (e.target === editBtn) return;
-            task.isActive = (!task.isActive) ? true : false;
+            task.isActive = !task.isActive;
             refresh();
         })
 
         //task properties draw
         if (task.isActive) {
-            const taskBody = elementConstructor('div', '', divTarget, 'task-body');
-            if (task.desc) {elementConstructor('p', `Description: ${task.desc}`, taskBody)};
-            elementConstructor('p', `Creation date: ${task.date}`, taskBody);
-            if (task.due) {elementConstructor('p', `Due date: ${task.due}`, taskBody)};
-            elementConstructor('p', `Priority: ${task.prio}`, taskBody);
+            const taskBody = elementFactory('div', '', 'task-body');
+
+            const desc = smartEdit(task, 'desc', 'Description: ', 'task-description');
+
+            const date = elementFactory('p', `Creation date: ${task.date}`, 'task-date');
+
+            const due = smartEdit(task, 'due', 'Due Date: ', 'task-due');
+
+            const prio = smartEdit(task, 'prio', 'Priority: ', 'task-priority');
+            
+            elementFactory('p', `Priority: ${task.prio}`, taskBody);
+            
+            taskBody.appendChild(desc);
+            taskBody.appendChild(date);
+            taskBody.appendChild(due);
+            taskBody.appendChild(prio);
+            dad.appendChild(taskBody);
         }
     })
 }
