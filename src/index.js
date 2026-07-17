@@ -5,6 +5,7 @@ class Project {
         this.name = name;
         this.id = crypto.randomUUID();
         this.tasks = [];
+        this.complete = false;
         this.isActive = true;
     }
 }
@@ -16,6 +17,7 @@ class Task {
         this.date = new Date().toISOString().split('T')[0];
         this.due = due;
         this.prio = prio;
+        this.complete = false;
         this.isActive = true;
         this.edit = {
             desc: false,
@@ -138,6 +140,7 @@ function projectForm(project) {
     if (project) title.el.value = project.name;
 
     const submitBtn = elementFactory('button', 'Confirm', 'new-project-submit');
+    submitBtn.type = 'submit';
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -152,10 +155,11 @@ function projectForm(project) {
     })
 
     const cancelBtn = elementFactory('button', 'Cancel', 'new-project-cancel');
+    cancelBtn.type = 'button';
     cancelBtn.addEventListener('click', refresh);
 
     form.appendChild(title);
-    
+
     form.appendChild(submitBtn);
     form.appendChild(cancelBtn);
 
@@ -171,8 +175,10 @@ function taskForm(project, task) {
     const form = elementFactory('form', '', 'new-task-form');
 
     const submitBtn = elementFactory('button', 'Confirm', 'new-task-submit');
+    submitBtn.type = 'submit';
 
     const cancelBtn = elementFactory('button', 'Cancel', 'new-task-cancel');
+    cancelBtn.type = 'button';
     cancelBtn.addEventListener('click', refresh);
 
     const title = labelFactory('task-name', 'text', 'Name: ');
@@ -234,15 +240,9 @@ function refresh() {
 
     //projects draw
     primalArray.forEach(project => {
-        const projectContainer = elementFactory('div', '', 'project');
+        const container = elementFactory('div', '', 'project');
 
         const projectHead = elementFactory('div', '', 'project-head');
-        //project expand
-        projectHead.addEventListener('click', (e) => {
-            if (e.target === editBtn) return;
-            project.isActive = !project.isActive;
-            refresh();
-        })
 
         const title = elementFactory('h2', project.name, 'project-name');
 
@@ -255,10 +255,32 @@ function refresh() {
         const editBtn = elementFactory('button', 'Edit', 'project-edit-button');
         editBtn.addEventListener('click', () => projectForm(project));
 
+        const complete = labelFactory(`project-${project.id}-complete`, 'checkbox', 'Completed: ');
+        complete.el.checked = project.complete;
+        complete.el.addEventListener('change', () => {
+            project.complete = complete.el.checked;
+            if (project.complete) {
+                project.isActive = false;
+            } else {
+                project.isActive = true;
+            }
+            saveData();
+            refresh();
+        })
+        if (project.complete) container.classList.add('project-complete');
+
+        //project expand
+        projectHead.addEventListener('click', (e) => {
+            if (editBtn.contains(e.target) || complete.contains(e.target)) return;
+            project.isActive = !project.isActive;
+            refresh();
+        })
+
         projectHead.appendChild(title);
+        projectHead.appendChild(complete);
         projectHead.appendChild(editBtn);
         projectHead.appendChild(removeBtn);
-        projectContainer.appendChild(projectHead);
+        container.appendChild(projectHead);
 
         //tasks draw
         if (project.isActive) {
@@ -269,11 +291,11 @@ function refresh() {
             const newTaskBtn = elementFactory('button', 'New Task', 'new-task-button');
             newTaskBtn.addEventListener('click', () => taskForm(project));
 
-            projectContainer.appendChild(newTaskBtn);
-            projectContainer.appendChild(projectBody);
+            container.appendChild(newTaskBtn);
+            container.appendChild(projectBody);
         };
 
-        contentDiv.appendChild(projectContainer);
+        contentDiv.appendChild(container);
     });
 }
 
@@ -295,7 +317,30 @@ function fillTasks(project, dad) {
         const editBtn = elementFactory('button', 'Edit', 'task-edit-button');
         editBtn.addEventListener('click', () => {taskForm(project, task)});
 
-        taskHead.appendChild(title)
+        const complete = labelFactory(`task-${task.id}-complete`, 'checkbox', 'Completed: ');
+        complete.el.checked = task.complete;
+        complete.el.addEventListener('change', () => {
+            task.complete = complete.el.checked;
+            if (task.complete) {
+                task.isActive = false;
+            } else {
+                task.isActive = true;
+            };
+            container.classList.toggle('task-complete');
+            //all tasks complete = project complete
+            if (project.tasks.every(t => t.complete)) {
+                project.complete = true;
+                project.isActive = false;
+            } else if (project.complete) {
+                project.complete = false;
+            }
+            saveData();
+            refresh();
+        })
+        if (task.complete) container.classList.add('task-complete');
+
+        taskHead.appendChild(title);
+        taskHead.appendChild(complete);
         taskHead.appendChild(editBtn);
         taskHead.appendChild(removeBtn);
 
@@ -303,7 +348,7 @@ function fillTasks(project, dad) {
 
         //task expand
         taskHead.addEventListener('click', (e) => {
-            if (e.target === editBtn) return;
+            if (editBtn.contains(e.target) || complete.contains(e.target)) return;
             task.isActive = !task.isActive;
             refresh();
         })
