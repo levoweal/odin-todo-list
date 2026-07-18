@@ -228,6 +228,23 @@ function taskForm(project, task) {
     dialog.showModal();
 }
 
+function confirmDialog(text, funcYes, funcNo) {
+    const dialog = elementFactory('dialog', '', 'confirm-dialog');
+    const p = elementFactory('p', text, 'confirm-text');
+    const confirm = elementFactory('button', 'Yes', 'confirm-yes-button');
+    const cancel = elementFactory('button', 'No', 'confirm-no-button');
+
+    confirm.addEventListener('click', funcYes);
+    cancel.addEventListener('click', funcNo);
+
+    dialog.appendChild(p);
+    dialog.appendChild(confirm);
+    dialog.appendChild(cancel);
+
+    contentDiv.appendChild(dialog);
+    dialog.showModal();
+}
+
 //new project form
 const newPrjBtn = document.createElement('button');
 newPrjBtn.textContent = 'New Project';
@@ -259,13 +276,23 @@ function refresh() {
         complete.el.checked = project.complete;
         complete.el.addEventListener('change', () => {
             project.complete = complete.el.checked;
-            if (project.complete) {
-                project.isActive = false;
-            } else {
-                project.isActive = true;
+            //complete project without all tasks
+            if (!project.tasks.every(t => t.complete)) {
+                confirmDialog(`You marked ${project.name} as completed, but not every task is. Do you want to mark every task for ${project.name} as completed?`, () => {
+                    project.tasks.forEach(task => {
+                        task.complete = true;
+                        task.isActive = false;
+                    });
+                    project.isActive = false;
+                    saveData();
+                    refresh();
+                }, () => {
+                    project.complete = false;
+                    project.isActive = true;
+                    saveData();
+                    refresh();
+                });
             }
-            saveData();
-            refresh();
         })
         if (project.complete) container.classList.add('project-complete');
 
@@ -329,13 +356,17 @@ function fillTasks(project, dad) {
             container.classList.toggle('task-complete');
             //all tasks complete = project complete
             if (project.tasks.every(t => t.complete)) {
+                confirmDialog(`Every task in ${project.name} project is complete. Do you want to mark ${project.name} as complete?`, () => {
                 project.complete = true;
                 project.isActive = false;
+                saveData();
+                refresh();
+                }, refresh);
             } else if (project.complete) {
                 project.complete = false;
+                saveData();
+                refresh();
             }
-            saveData();
-            refresh();
         })
         if (task.complete) container.classList.add('task-complete');
 
