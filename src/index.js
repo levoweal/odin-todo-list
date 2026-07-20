@@ -30,15 +30,6 @@ class Task {
 
 const primalArray = JSON.parse(localStorage.getItem("projects")) || [new Project('Default')];
 
-//this is for testing purposes
-/*
-primalArray[0].tasks.push(new Task('example task 1', 'example description', '2026-01-01', 'none'));
-primalArray[0].tasks[0].isActive = true;
-primalArray[0].tasks.push(new Task('example task 2', 'example description 2', '2000-09-11', 'low'));
-primalArray[0].tasks[1].isActive = false;
-*/
-
-const content = document.querySelector('.content');
 const newPrjBtnDiv = document.querySelector('.new-projects-button-div');
 const contentDiv = document.querySelector('.projects');
 
@@ -91,7 +82,7 @@ function smartEdit(task, taskProp, titleText, className) {
     if (!task.edit[taskProp]) {
         container = elementFactory('div', '', className);
         title = elementFactory('span', titleText);
-        content = elementFactory('span', task[taskProp]);
+        content = elementFactory('span', task[taskProp], `${className}-${task[taskProp]}`);
         container.appendChild(title);
         container.appendChild(content);
     } else {
@@ -134,6 +125,7 @@ function smartEdit(task, taskProp, titleText, className) {
 function projectForm(project) {
     const dialog = elementFactory('dialog', '', 'new-project-dialog');
     const form = elementFactory('form', '', 'new-project-form');
+    const buttons = elementFactory('div', '', 'new-project-buttons');
 
     const title = labelFactory('project-name', 'text', 'Enter name: ');
     title.el.required = true;
@@ -160,8 +152,9 @@ function projectForm(project) {
 
     form.appendChild(title);
 
-    form.appendChild(submitBtn);
-    form.appendChild(cancelBtn);
+    buttons.appendChild(submitBtn);
+    buttons.appendChild(cancelBtn);
+    form.appendChild(buttons);
 
     dialog.appendChild(form);
     contentDiv.appendChild(dialog);
@@ -173,6 +166,7 @@ function projectForm(project) {
 function taskForm(project, task) {
     const dialog = elementFactory('dialog', '', 'new-task-dialog');
     const form = elementFactory('form', '', 'new-task-form');
+    const buttons = elementFactory('div', '', 'new-task-buttons');
 
     const submitBtn = elementFactory('button', 'Confirm', 'new-task-submit');
     submitBtn.type = 'submit';
@@ -219,8 +213,9 @@ function taskForm(project, task) {
     form.appendChild(dueDate);
     form.appendChild(select);
 
-    form.appendChild(submitBtn);
-    form.appendChild(cancelBtn);
+    buttons.appendChild(submitBtn);
+    buttons.appendChild(cancelBtn);
+    form.appendChild(buttons);
 
     dialog.appendChild(form);
     contentDiv.appendChild(dialog);
@@ -245,7 +240,7 @@ function confirmDialog(text, funcYes, funcNo) {
     dialog.showModal();
 }
 
-//new project form
+//new project button
 const newPrjBtn = document.createElement('button');
 newPrjBtn.textContent = 'New Project';
 newPrjBtn.addEventListener('click', () => projectForm());
@@ -276,6 +271,9 @@ function refresh() {
         complete.el.checked = project.complete;
         complete.el.addEventListener('change', () => {
             project.complete = complete.el.checked;
+            project.isActive = !complete.el.checked;
+            saveData();
+            refresh();
             //complete project without all tasks
             if (!project.tasks.every(t => t.complete)) {
                 confirmDialog(`You marked ${project.name} as completed, but not every task is. Do you want to mark every task for ${project.name} as completed?`, () => {
@@ -350,8 +348,12 @@ function fillTasks(project, dad) {
             task.complete = complete.el.checked;
             if (task.complete) {
                 task.isActive = false;
+                saveData();
+                refresh();
             } else {
                 task.isActive = true;
+                saveData();
+                refresh();
             };
             container.classList.toggle('task-complete');
             //all tasks complete = project complete
@@ -391,7 +393,8 @@ function fillTasks(project, dad) {
             const desc = smartEdit(task, 'desc', 'Description: ', 'task-description');
 
             const date = elementFactory('div', '', 'task-date');
-            date.appendChild(elementFactory('p', `Creation date: ${task.date}`));
+            date.appendChild(elementFactory('span', `Creation date: `));
+            date.appendChild(elementFactory('span', task.date));
 
             const due = smartEdit(task, 'due', 'Due Date: ', 'task-due');
 
