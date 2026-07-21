@@ -41,25 +41,23 @@ header h1 {
 }
 
 .new-projects-button-div button {
-  background: #667eea;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: #798bdd;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
   border-radius: 8px;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-weight: 500;
   box-shadow: 0 2px 4px rgba(102, 126, 234, 0.4);
 }
 
 .new-projects-button-div button:hover {
-  background: #5568d3;
-  transform: translateY(-2px);
+  background: #6f7ed3;
+  transform: translateY(1px);
   box-shadow: 0 4px 8px rgba(102, 126, 234, 0.6);
-}
-
-.new-projects-button-div button:active {
-  transform: translateY(0);
 }
 
 /* ========== PROJECTS CONTAINER ========== */
@@ -90,6 +88,7 @@ header h1 {
   background: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
   gap: 1rem;
+  cursor: pointer;
 }
 
 .project-name {
@@ -98,12 +97,11 @@ header h1 {
   font-weight: 600;
   margin: 0;
   color: #2d3748;
-  cursor: pointer;
   user-select: none;
   transition: color 0.2s ease;
 }
 
-.project-name:hover {
+.project-head:hover .project-name {
   color: #667eea;
 }
 
@@ -176,7 +174,7 @@ input[type="checkbox"] {
 
 /* ========== NEW TASK BUTTON ========== */
 .new-task-button {
-  width: 100%;
+  width: calc(100% - 2.5rem);
   padding: 0.75rem;
   background: #f0f4ff;
   color: #667eea;
@@ -230,7 +228,7 @@ input[type="checkbox"] {
   gap: 0.75rem;
   cursor: pointer;
   user-select: none;
-  background: white;
+  background: #fcfdff;
   transition: background 0.2s ease;
 }
 
@@ -247,7 +245,7 @@ input[type="checkbox"] {
   transition: color 0.2s ease;
 }
 
-.task-name:hover {
+.task-head:hover .task-name {
   color: #667eea;
 }
 
@@ -257,11 +255,16 @@ input[type="checkbox"] {
   color: #999;
 }
 
+.task.task-complete .task-body span {
+    /*text-decoration: line-through;*/
+    color: #999;
+}
+
 /* ========== TASK BODY (DETAILS) ========== */
 .task-body {
   padding: 1rem;
   padding-top: 0;
-  background: #fafbff;
+  background: #fcfdff;
   border-top: 1px solid #e9ecef;
 }
 
@@ -395,7 +398,7 @@ div[class*="-con"] {
 [class$="-con"] input[type="date"],
 [class$="-con"] select {
   padding: 0.75rem;
-  border: 2px solid #667eea;
+  border: 2px solid #e9ecef;
   border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
@@ -407,7 +410,7 @@ div[class*="-con"] {
 [class$="-con"] input[type="date"]:focus,
 [class$="-con"] select:focus {
   outline: none;
-  border-color: #5568d3;
+  border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
   background: #fafbff;
 }
